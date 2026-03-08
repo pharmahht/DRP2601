@@ -1,0 +1,1819 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pharmacist Clinical Training Simulator</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#1e293b;
+      --panel-2:#111827;
+      --line:#334155;
+      --text:#e5eefb;
+      --muted:#94a3b8;
+      --teal:#0d9488;
+      --teal-2:#14b8a6;
+      --cyan:#0891b2;
+      --good-bg:#064e3b;
+      --good-line:#10b981;
+      --bad-bg:#78350f;
+      --bad-line:#f59e0b;
+      --red:#f87171;
+      --red-bg:rgba(127,29,29,.28);
+      --shadow:0 10px 30px rgba(0,0,0,.25);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+    body{min-height:100vh}
+
+    .page{
+      max-width:1440px;
+      margin:0 auto;
+      padding:20px;
+    }
+
+    .header{
+      background:linear-gradient(90deg,#115e59,#164e63);
+      border-radius:22px;
+      padding:20px 24px;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+
+    .header-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      margin-bottom:14px;
+    }
+
+    .title-wrap{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+
+    .logo{
+      width:48px;height:48px;border-radius:14px;
+      display:grid;place-items:center;
+      background:rgba(255,255,255,.14);
+      font-size:24px;
+      flex:0 0 auto;
+    }
+
+    h1{margin:0;font-size:24px}
+    .subtitle{margin:4px 0 0;color:#c7f9f3;font-size:14px}
+    .subline{margin:4px 0 0;color:#cbd5e1;font-size:12px}
+
+    .progress-badge{
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.12);
+      padding:10px 14px;
+      border-radius:14px;
+      min-width:170px;
+    }
+    .progress-badge .label{font-size:12px;color:#cbd5e1}
+    .progress-badge .value{font-size:18px;font-weight:700;margin-top:4px}
+
+    .case-bg{
+      background:rgba(2,6,23,.45);
+      border:1px solid rgba(148,163,184,.18);
+      border-radius:18px;
+      padding:16px 18px;
+      line-height:1.6;
+      font-size:14px;
+    }
+    .case-bg strong{color:#67e8f9}
+
+    .main{
+      display:grid;
+      grid-template-columns:minmax(320px, 1fr) minmax(560px, 2fr);
+      gap:18px;
+      align-items:start;
+    }
+
+    .left-col{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      min-width:0;
+    }
+
+    .right-col{
+      position:sticky;
+      top:18px;
+      align-self:start;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      min-width:0;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .card-pad{padding:16px}
+
+    .patient-head{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      margin-bottom:14px;
+    }
+
+    .avatar-round{
+      width:54px;height:54px;border-radius:50%;
+      display:grid;place-items:center;
+      font-size:28px;
+      background:linear-gradient(135deg,#fbbf24,#f97316);
+      flex:0 0 auto;
+    }
+
+    .small-muted{font-size:13px;color:var(--muted)}
+    .summary-box{
+      background:rgba(51,65,85,.45);
+      border-radius:14px;
+      padding:12px;
+      line-height:1.5;
+      font-size:14px;
+    }
+    .summary-box .k{color:#94a3b8}
+
+    details.card summary{
+      list-style:none;
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px 16px;
+      font-weight:600;
+    }
+    details.card summary::-webkit-details-marker{display:none}
+    .detail-content{padding:0 16px 16px}
+    .section-title{color:#67e8f9;font-weight:600;margin:0 0 8px}
+    .text-block{font-size:14px;line-height:1.6;color:#dbe7f5}
+    .text-block p{margin:0 0 10px}
+
+    .mini-cards{
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+    .mini-card{
+      background:rgba(51,65,85,.45);
+      border-radius:12px;
+      padding:10px;
+      text-align:center;
+    }
+    .mini-card .k{font-size:12px;color:var(--muted)}
+    .mini-card .v{font-size:18px;font-weight:700;color:#34d399;margin-top:4px}
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+    th,td{
+      border:1px solid #475569;
+      padding:8px 9px;
+      vertical-align:top;
+      text-align:left;
+    }
+    th{background:rgba(51,65,85,.65)}
+    .abnormal{
+      color:#fecaca;
+      background:var(--red-bg);
+      font-weight:600;
+    }
+
+    .sim-grid{
+      display:grid;
+      grid-template-columns:1fr 260px;
+      gap:14px;
+    }
+
+    .sim-stage{
+      min-height:360px;
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(180deg,#334155,#1f2937);
+      border-radius:22px;
+      border:1px solid #475569;
+      padding:18px;
+    }
+
+    .stats-panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+    }
+    .stats-panel h3{margin:0 0 12px;font-size:16px}
+    .stats-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .stat-box{
+      background:rgba(51,65,85,.45);
+      border-radius:12px;
+      padding:12px;
+    }
+    .stat-box .k{font-size:12px;color:var(--muted)}
+    .stat-box .v{font-size:20px;font-weight:700;margin-top:6px}
+
+    .window{
+      position:absolute;left:18px;top:18px;
+      width:130px;height:88px;border-radius:12px;
+      background:linear-gradient(180deg,#93c5fd,#38bdf8);
+      border:5px solid rgba(100,116,139,.8);
+      opacity:.75;
+    }
+
+    .desk{
+      position:absolute;left:50%;bottom:70px;transform:translateX(-50%);
+      width:310px;
+    }
+    .desk-top{height:16px;background:#64748b;border-radius:10px 10px 0 0}
+    .desk-mid{
+      height:90px;background:#fff;border-radius:0 0 12px 12px;position:relative;
+    }
+    .desk-icon{
+      position:absolute;
+      left:18px;
+      top:12px;
+      font-size:42px;
+      opacity:1;
+    }
+    .desk-cloth{
+      position:absolute;right:0;bottom:0;width:210px;height:58px;
+      background:linear-gradient(90deg,#99f6e4,#5eead4);
+      border-radius:28px 0 12px 0;
+    }
+    .desk-legs{
+      display:flex;justify-content:space-between;padding:0 24px;
+    }
+    .desk-legs span{
+      width:12px;height:28px;background:#475569;border-radius:0 0 6px 6px;display:block;
+    }
+
+    .monitor-btn{
+      position:absolute;right:18px;top:18px;
+      width:126px;
+      background:#0f172a;
+      border:2px solid #475569;
+      border-radius:14px;
+      padding:10px;
+      color:#34d399;
+      cursor:pointer;
+      transition:.2s;
+    }
+    .monitor-btn:hover{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+    .monitor-btn .txt{margin-top:8px;font-size:12px;text-align:center}
+
+    .character{
+      position:absolute;
+      bottom:18px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      cursor:pointer;
+      user-select:none;
+      transition:.25s;
+    }
+
+    .char-left{
+      left:18px;
+      animation: floatChar 2.8s ease-in-out infinite;
+      animation-delay:0s;
+    }
+
+    .char-center{
+      left:50%;
+      transform:translateX(-50%);
+      animation: floatCenter 2.8s ease-in-out infinite;
+      animation-delay:.4s;
+    }
+
+    .char-right{
+      right:18px;
+      animation: floatChar 2.8s ease-in-out infinite;
+      animation-delay:.8s;
+    }
+
+    .character:hover{transform:translateY(-4px)}
+    .char-center:hover{
+      transform:translateX(-50%) translateY(-4px);
+    }
+
+    .char-icon{
+      width:68px;height:68px;border-radius:50%;
+      display:grid;place-items:center;
+      font-size:34px;
+      border:4px solid #fff;
+      box-shadow:var(--shadow);
+      animation:pulseGlow 2.5s ease-in-out infinite;
+      transition:transform .2s ease;
+    }
+
+    .character:hover .char-icon{
+      transform:scale(1.06) rotate(-2deg);
+    }
+
+    .dentist{background:linear-gradient(135deg,#60a5fa,#2563eb)}
+    .pharmacist{background:linear-gradient(135deg,#34d399,#14b8a6)}
+    .patient{background:linear-gradient(135deg,#c084fc,#9333ea)}
+
+    .char-label{
+      margin-top:8px;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:600;
+      color:#fff;
+      background:#334155;
+    }
+    .char-note{font-size:11px;color:#cbd5e1;margin-top:5px}
+
+    @keyframes floatChar{
+      0%,100%{ transform:translateY(0); }
+      50%{ transform:translateY(-8px); }
+    }
+
+    @keyframes floatCenter{
+      0%,100%{ transform:translateX(-50%) translateY(0); }
+      50%{ transform:translateX(-50%) translateY(-8px); }
+    }
+
+    @keyframes pulseGlow{
+      0%,100%{ box-shadow:var(--shadow); }
+      50%{ box-shadow:0 0 0 6px rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.25); }
+    }
+
+    .floating-tip{
+      position:absolute;left:50%;top:16px;transform:translateX(-50%);
+      background:rgba(15,23,42,.92);
+      border:1px solid rgba(45,212,191,.45);
+      border-radius:14px;
+      padding:10px 14px;
+      font-size:13px;
+      color:#5eead4;
+      backdrop-filter:blur(6px);
+    }
+
+    .dialogue-box, .scene2-panel, .quiz-box, .extension-panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+    .hidden{display:none!important}
+
+    .speaker-row{
+      display:flex;gap:12px;align-items:center;margin-bottom:14px;
+    }
+    .speaker-avatar{
+      width:48px;height:48px;border-radius:50%;
+      display:grid;place-items:center;font-size:24px;
+      flex:0 0 auto;
+    }
+    .speaker-name{font-weight:700}
+    .speaker-role{font-size:13px;color:var(--muted)}
+
+    .question-box{
+      background:rgba(51,65,85,.45);
+      border-radius:14px;
+      padding:14px;
+      margin-bottom:14px;
+      white-space:pre-line;
+      line-height:1.6;
+      font-size:15px;
+    }
+
+    .options{
+      display:grid;
+      gap:10px;
+    }
+    .opt-btn{
+      width:100%;
+      text-align:left;
+      background:#334155;
+      color:var(--text);
+      border:1px solid #475569;
+      border-radius:14px;
+      padding:14px;
+      cursor:pointer;
+      transition:.2s;
+      font-size:14px;
+      line-height:1.5;
+    }
+    .opt-btn:hover{
+      background:#3f4d63;
+      border-color:#2dd4bf;
+      transform:translateX(4px);
+    }
+
+    .feedback{
+      margin-top:14px;
+      border-radius:14px;
+      padding:14px;
+      display:none;
+    }
+    .feedback.show{display:block}
+    .feedback.good{background:rgba(6,78,59,.55);border:1px solid rgba(16,185,129,.65)}
+    .feedback.bad{background:rgba(120,53,15,.5);border:1px solid rgba(245,158,11,.65)}
+    .feedback-title{font-weight:700;margin-bottom:6px}
+    .feedback-text{white-space:pre-line;line-height:1.6;font-size:14px}
+
+    .primary-btn, .secondary-btn{
+      border:none;border-radius:12px;padding:11px 14px;cursor:pointer;font-weight:600;
+      transition:.2s;
+    }
+    .primary-btn{background:var(--teal);color:#fff}
+    .primary-btn:hover{background:var(--teal-2)}
+    .secondary-btn{background:#be123c;color:#fff}
+    .secondary-btn:hover{background:#e11d48}
+
+    .scene2-panel p{white-space:pre-line;line-height:1.7;font-size:14px}
+    .scene2-head{
+      display:flex;gap:12px;align-items:center;margin-bottom:14px;
+    }
+    .scene2-badge{
+      width:48px;height:48px;border-radius:50%;
+      display:grid;place-items:center;font-size:22px;
+      background:linear-gradient(135deg,#fb7185,#db2777);
+    }
+
+    .final-panel{
+      text-align:center;
+      padding:10px 0;
+    }
+    .final-panel h2{margin:8px 0 8px}
+    .takeaway{
+      text-align:left;
+      background:rgba(51,65,85,.45);
+      border-radius:16px;
+      padding:14px;
+      margin-top:16px;
+      line-height:1.7;
+      font-size:14px;
+    }
+
+    .quiz-actions{margin-top:12px}
+    .quiz-box h3, .extension-panel h3{margin:0 0 8px}
+    .q-count{color:var(--muted);font-size:13px;margin-bottom:10px}
+
+    .license-panel{
+      margin-top:18px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      line-height:1.7;
+      font-size:14px;
+    }
+
+    .license-panel h3{
+      margin:0 0 10px;
+      color:#67e8f9;
+      font-size:18px;
+    }
+
+    .license-panel .license-subtitle{
+      font-weight:700;
+      color:#e2e8f0;
+      margin-bottom:10px;
+    }
+
+    .license-panel .license-meta{
+      color:var(--muted);
+      margin-bottom:12px;
+    }
+
+    .license-panel ul{
+      margin:8px 0 12px 20px;
+      padding:0;
+    }
+
+    .license-panel li{
+      margin-bottom:6px;
+    }
+
+    .license-panel a{
+      color:#5eead4;
+      text-decoration:none;
+    }
+
+    .license-panel a:hover{
+      text-decoration:underline;
+    }
+
+    @media (max-width: 1080px){
+      .main{grid-template-columns:1fr}
+      .right-col{position:static}
+      .sim-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-top">
+        <div class="title-wrap">
+          <div class="logo">💊</div>
+          <div>
+            <h1 id="scenario-title">Pharmacist Clinical Training Simulator</h1>
+            <div class="subtitle">Drug-related gingival enlargement and safe medication counseling</div>
+            <div class="subline">Teaching case for pharmacy training</div>
+            <div class="subline">Learning material design: Professor. 陳崇鈺 Research Team (Huu-Hiep Tran)</div>
+          </div>
+        </div>
+        <div class="progress-badge">
+          <div class="label">Learning Progress</div>
+          <div class="value" id="progress-text">0 / 5</div>
+        </div>
+      </div>
+
+      <div class="case-bg">
+        <strong>📋 Case Background:</strong><br>
+        N. H. Nguyen is a 56-year-old female who visited a dental clinic because of progressive gum swelling and bleeding when brushing teeth for the past two months.<br><br>
+        The dentist suspected that the gingival enlargement might be related to medications and asked the clinical pharmacist to review the patient's medication history and possible drug-related causes.<br><br>
+        The patient has a history of hypertension, type 2 diabetes, GERD with previous esophagitis, and iron-deficiency anemia. Her current medications include amlodipine, telmisartan, metformin, indapamide, and iron supplements.<br><br>
+        The pharmacist must discuss the case with the dentist, evaluate possible drug-related causes, counsel the patient about oral hygiene and medication safety, and later provide counseling about newly prescribed alendronate for osteoporosis.
+      </div>
+    </header>
+
+    <section class="main">
+      <aside class="left-col">
+        <div class="card card-pad">
+          <div class="patient-head">
+            <div class="avatar-round">👩🏻</div>
+            <div>
+              <div style="font-weight:700;font-size:18px" id="patient-name">N. H. Nguyen</div>
+              <div class="small-muted">56 years old / Female / Outpatient follow-up</div>
+            </div>
+          </div>
+          <div class="summary-box">
+            <div><span class="k">Main problem:</span> Progressive gingival swelling and bleeding during brushing</div>
+            <div><span class="k">Later problem:</span> Counseling for newly prescribed alendronate</div>
+            <div><span class="k">Medical history:</span> Hypertension, type 2 diabetes, GERD with previous esophagitis, iron-deficiency anemia</div>
+          </div>
+        </div>
+
+        <details class="card">
+          <summary>
+            <span>📋 Case Note</span>
+            <span>▾</span>
+          </summary>
+          <div class="detail-content text-block">
+            <p class="section-title">General Data</p>
+            <p>Name: N. H. Nguyen<br>Chief Complaint: Progressive gingival swelling with bleeding during brushing<br>Occupation: Self-employed</p>
+
+            <p class="section-title">Present Illness</p>
+            <p>The patient noticed worsening gum swelling over the last two months. She reported bleeding during brushing and difficulty maintaining oral hygiene. The dentist suspected possible medication-related gingival enlargement.</p>
+
+            <p class="section-title">Past History</p>
+            <p>Hypertension, type 2 diabetes, GERD with previous esophagitis, iron-deficiency anemia.</p>
+          </div>
+        </details>
+
+        <details class="card">
+          <summary>
+            <span>📝 Social / Oral Care Notes</span>
+            <span>▾</span>
+          </summary>
+          <div class="detail-content text-block">
+            <p>The patient brushes her teeth, but rarely uses dental floss or other interdental cleaning tools.</p>
+            <p>She often reports that swollen gums make cleaning uncomfortable.</p>
+            <p>She usually drinks only a small amount of water when swallowing tablets.</p>
+          </div>
+        </details>
+
+        <details class="card">
+          <summary>
+            <span>💊 History Medications</span>
+            <span>▾</span>
+          </summary>
+          <div class="detail-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date / Period</th>
+                  <th>Medication</th>
+                  <th>Dose / Frequency</th>
+                  <th>Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Before gum swelling worsened</td>
+                  <td>Amlodipine</td>
+                  <td>5 mg once daily</td>
+                  <td>Long-term blood pressure treatment</td>
+                </tr>
+                <tr>
+                  <td>Before gum swelling worsened</td>
+                  <td>Telmisartan</td>
+                  <td>40 mg once daily</td>
+                  <td>Ongoing treatment</td>
+                </tr>
+                <tr>
+                  <td>Before gum swelling worsened</td>
+                  <td>Metformin</td>
+                  <td>500 mg three times daily</td>
+                  <td>Ongoing treatment</td>
+                </tr>
+                <tr>
+                  <td>Before gum swelling worsened</td>
+                  <td>Indapamide</td>
+                  <td>1.25 mg once daily</td>
+                  <td>Ongoing treatment</td>
+                </tr>
+                <tr>
+                  <td>Before gum swelling worsened</td>
+                  <td>Ferrous sulfate + folic acid</td>
+                  <td>Twice daily</td>
+                  <td>Ongoing treatment</td>
+                </tr>
+                <tr>
+                  <td>Around 2 months before dental visit</td>
+                  <td>Progressive gingival swelling</td>
+                  <td>-</td>
+                  <td>No self-discontinuation of medication</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="card">
+          <summary>
+            <span>❤️ Vital Signs</span>
+            <span>▾</span>
+          </summary>
+          <div class="detail-content">
+            <div class="text-block" style="margin-bottom:10px;">
+              <p><span class="section-title">Measurement date:</span> 2025/11/15</p>
+            </div>
+            <div class="mini-cards">
+              <div class="mini-card"><div class="k">Blood Pressure</div><div class="v">134/84</div></div>
+              <div class="mini-card"><div class="k">Heart Rate</div><div class="v">86</div></div>
+              <div class="mini-card"><div class="k">Temperature</div><div class="v">36.4°C</div></div>
+              <div class="mini-card"><div class="k">Weight</div><div class="v">51 kg</div></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="card">
+          <summary>
+            <span>🏥 Physical Examination</span>
+            <span>▾</span>
+          </summary>
+          <div class="detail-content text-block">
+            <p>Oral: Gingival swelling with bleeding during brushing</p>
+            <p>Dental imaging: No major structural abnormality reported</p>
+            <p>Follow-up concern: Previous esophagitis and concern about swallowing alendronate safely</p>
+          </div>
+        </details>
+
+        <details class="card">
+          <summary>
+            <span>🧪 Lab Values</span>
+            <span>▾</span>
+          </summary>
+          <div class="detail-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>Test</th>
+                  <th>Result (2025/11/15)</th>
+                  <th>Reference Range</th>
+                  <th>Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>WBC (×10³/µL)</td>
+                  <td>7.4</td>
+                  <td>4 – 10</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>NEU (%)</td>
+                  <td>67.3</td>
+                  <td>45 – 75</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>LYM (%)</td>
+                  <td>20.9</td>
+                  <td>20 – 35</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>MONO (%)</td>
+                  <td>9.3</td>
+                  <td>4 – 10</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>EOS (%)</td>
+                  <td>1.6</td>
+                  <td>1 – 8</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>BASO (%)</td>
+                  <td>0.9</td>
+                  <td>0 – 2</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>Hemoglobin (g/dL)</td>
+                  <td class="abnormal">11.3</td>
+                  <td>12 – 16</td>
+                  <td class="abnormal">Low</td>
+                </tr>
+                <tr>
+                  <td>Platelet (×10³/µL)</td>
+                  <td>260</td>
+                  <td>150 – 400</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>Fasting glucose (mmol/L)</td>
+                  <td class="abnormal">5.9</td>
+                  <td>3.9 – 5.6</td>
+                  <td class="abnormal">High</td>
+                </tr>
+                <tr>
+                  <td>HbA1c (%)</td>
+                  <td class="abnormal">6.4</td>
+                  <td>4.0 – 6.0</td>
+                  <td class="abnormal">High</td>
+                </tr>
+                <tr>
+                  <td>Total cholesterol (mmol/L)</td>
+                  <td>4.8</td>
+                  <td>3.9 – 5.2</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>LDL-C (mmol/L)</td>
+                  <td>3.1</td>
+                  <td>&lt; 3.4</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>HDL-C (mmol/L)</td>
+                  <td>1.3</td>
+                  <td>&gt; 0.9</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>Triglyceride (mmol/L)</td>
+                  <td>1.6</td>
+                  <td>0.4 – 1.9</td>
+                  <td>Within normal range</td>
+                </tr>
+                <tr>
+                  <td>CRP (mg/dL)</td>
+                  <td class="abnormal">8.8</td>
+                  <td>&lt; 1.0</td>
+                  <td class="abnormal">High</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="card hidden" id="overview-card">
+          <summary>
+            <span>🔬 Overview of Key Assessment Data</span>
+            <span>▾</span>
+          </summary>
+          <div class="detail-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Finding</th>
+                  <th>Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Main suspected drug</td>
+                  <td>Amlodipine</td>
+                  <td>Likely medication-related cause of gingival enlargement</td>
+                </tr>
+                <tr>
+                  <td>Oral hygiene issue</td>
+                  <td>Rare use of dental floss / interdental cleaning</td>
+                  <td>May worsen gingival inflammation and enlargement</td>
+                </tr>
+                <tr>
+                  <td>Dental imaging</td>
+                  <td>No major structural abnormality reported</td>
+                  <td>Supports need to review medication-related cause</td>
+                </tr>
+                <tr>
+                  <td>History relevant to future medication counseling</td>
+                  <td class="abnormal">Previous esophagitis</td>
+                  <td class="abnormal">Important risk factor for alendronate counseling</td>
+                </tr>
+                <tr>
+                  <td>New diagnosis at follow-up</td>
+                  <td>Osteoporosis</td>
+                  <td>Requires new medication counseling</td>
+                </tr>
+                <tr>
+                  <td>New medication</td>
+                  <td class="abnormal">Alendronate</td>
+                  <td class="abnormal">Esophageal irritation risk</td>
+                </tr>
+                <tr>
+                  <td>Co-medication at follow-up</td>
+                  <td class="abnormal">Calcium supplement</td>
+                  <td class="abnormal">Should be separated from alendronate</td>
+                </tr>
+                <tr>
+                  <td>Swallowing-related concern</td>
+                  <td class="abnormal">Sometimes tablets feel stuck in throat</td>
+                  <td class="abnormal">Raises concern about feasibility and safety of oral alendronate</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </aside>
+
+      <section class="right-col">
+        <div class="sim-grid">
+          <div class="sim-stage">
+            <div class="window"></div>
+
+            <button class="monitor-btn" onclick="startQuizMode()">
+              <svg viewBox="0 0 100 30" width="100%" height="34">
+                <path d="M0,15 L20,15 L25,5 L30,25 L35,15 L100,15" fill="none" stroke="#10b981" stroke-width="2.2" />
+              </svg>
+              <div class="txt">Click for quiz</div>
+            </button>
+
+            <div class="desk">
+              <div class="desk-top"></div>
+              <div class="desk-mid">
+                <div class="desk-icon">📋</div>
+                <div class="desk-cloth"></div>
+              </div>
+              <div class="desk-legs"><span></span><span></span></div>
+            </div>
+
+            <div class="character char-left" onclick="startDialogue('doctor')">
+              <div class="char-icon dentist">👨‍⚕️</div>
+              <div class="char-label">Dentist</div>
+              <div class="char-note">Click to talk</div>
+            </div>
+
+            <div class="character char-center">
+              <div class="char-icon pharmacist">🧑‍🔬</div>
+              <div class="char-label">You (Pharmacist)</div>
+            </div>
+
+            <div class="character char-right" onclick="startDialogue(canOpenPatient() ? currentPatientKey() : 'patient_locked')">
+              <div class="char-icon patient">👩🏻</div>
+              <div class="char-label">Patient</div>
+              <div class="char-note">Click to talk</div>
+            </div>
+
+            <div class="floating-tip" id="instruction-overlay">
+              👆 Click <strong>Dentist</strong> to start Scene 1
+            </div>
+          </div>
+
+          <div class="stats-panel">
+            <h3>Learning Statistics</h3>
+            <div class="stats-grid">
+              <div class="stat-box">
+                <div class="k">Total Questions</div>
+                <div class="v" id="stat-total">0</div>
+              </div>
+              <div class="stat-box">
+                <div class="k">Correct Answers</div>
+                <div class="v" id="stat-correct">0</div>
+              </div>
+              <div class="stat-box">
+                <div class="k">Wrong Answers</div>
+                <div class="v" id="stat-wrong">0</div>
+              </div>
+              <div class="stat-box">
+                <div class="k">Learning Progress</div>
+                <div class="v" id="stat-progress">0 / 5</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialogue-box hidden" id="dialogue-box">
+          <div class="speaker-row">
+            <div class="speaker-avatar" id="speaker-avatar"></div>
+            <div>
+              <div class="speaker-name" id="speaker-name"></div>
+              <div class="speaker-role" id="speaker-role"></div>
+            </div>
+          </div>
+
+          <div class="question-box" id="question-text"></div>
+
+          <div class="options" id="answer-options"></div>
+
+          <div class="feedback" id="feedback-box">
+            <div class="feedback-title" id="feedback-title"></div>
+            <div class="feedback-text" id="feedback-text"></div>
+            <div style="margin-top:12px">
+              <button class="primary-btn" id="feedback-btn">Continue</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="scene2-panel hidden" id="scene2-panel">
+          <div class="scene2-head">
+            <div class="scene2-badge">📌</div>
+            <div>
+              <div style="font-weight:700">Scene 2: Follow-up Visit</div>
+              <div class="small-muted">New diagnosis and new medication counseling</div>
+            </div>
+          </div>
+
+          <div class="question-box" style="margin-bottom:0">
+After about 3 months, the patient's gum condition improved after dental care, oral hygiene reinforcement, and communication with the treating physician regarding the suspected medication-related problem.
+
+At a later follow-up visit, the patient received a new diagnosis of osteoporosis and was prescribed alendronate.
+
+Because she had a history of esophagitis and sometimes felt that tablets became stuck in her throat, she returned to the pharmacist for further counseling about safe medication use.
+          </div>
+
+          <div style="margin-top:14px">
+            <button class="secondary-btn" onclick="startScene2()">Start Scene 2</button>
+          </div>
+        </div>
+
+        <div class="extension-panel hidden" id="extension-panel"></div>
+        <div class="quiz-box hidden" id="quiz-box"></div>
+      </section>
+    </section>
+
+    <section class="license-panel">
+      <h3>License</h3>
+
+      <div class="license-subtitle">
+        Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
+      </div>
+
+      <div class="license-meta">
+        Author: Huu Hiep Tran<br>
+        Affiliation: Professor. 陳崇鈺 Research Team (Huu-Hiep Tran), Kaohsiung Medical University<br>
+        Project: Pharmacist Clinical Training Simulator – Drug-Induced Gingival Enlargement and Medication Counseling Case
+      </div>
+
+      <p>
+        This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+        To view a copy of this license, visit
+        <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer">
+          http://creativecommons.org/licenses/by-nc-sa/4.0/
+        </a>
+        or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+      </p>
+
+      <p><strong>Under this license, you are free to:</strong></p>
+      <ul>
+        <li><strong>Share:</strong> Copy and redistribute the material in any medium or format.</li>
+        <li><strong>Adapt:</strong> Remix, transform, and build upon the material.</li>
+      </ul>
+
+      <p><strong>Under the following terms:</strong></p>
+      <ul>
+        <li><strong>Attribution:</strong> You must give appropriate credit to the author and institution.</li>
+        <li><strong>NonCommercial:</strong> You may not use the material for commercial purposes.</li>
+        <li><strong>ShareAlike:</strong> If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.</li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    const stats = {
+      total: 0,
+      correct: 0,
+      wrong: 0
+    };
+
+    const state = {
+      currentKey: null,
+      stageCompleted: new Set(),
+      scene2Unlocked: false,
+      extensionUnlocked: false,
+      extensionCompleted: false,
+      activeMode: "dialogue"
+    };
+
+    const dialogues = {
+      patient_locked: {
+        speaker: "N. H. Nguyen",
+        role: "Patient",
+        avatar: "👩🏻",
+        avatarBg: "linear-gradient(135deg,#c084fc,#9333ea)",
+        question: "The patient discussion will be available after the dentist–pharmacist discussion is completed.",
+        options: [
+          {
+            text: "Understood. I will speak with the dentist first.",
+            correct: true,
+            endResponse: true,
+            feedback: "Good. Start with the dentist discussion before moving to patient counseling."
+          }
+        ]
+      },
+
+      doctor: {
+        speaker: "Dr. Lin",
+        role: "Dentist",
+        avatar: "👨‍⚕️",
+        avatarBg: "linear-gradient(135deg,#60a5fa,#2563eb)",
+        question: "Pharmacist, I would like your opinion on this patient. She has had progressive gingival swelling for more than two months. Her dental X-ray is normal, so I am concerned there may be a medication-related cause. From your perspective, what history should we review first together?",
+        options: [
+          {
+            text: "We should first review her oral hygiene history, including brushing, flossing or interdental cleaning habits, and whether gum bleeding has made oral care difficult.",
+            correct: true,
+            feedback: "Correct. In this case, oral hygiene history is important because plaque control and flossing difficulties can aggravate gingival enlargement, even if a drug is the main trigger.",
+            next: "dentist_medhistory"
+          },
+          {
+            text: "Because the X-ray is normal, I think we can ignore oral hygiene and focus only on prescribing a mouthwash.",
+            correct: false,
+            feedback: "Not appropriate. Normal dental imaging does not rule out clinically important oral hygiene factors or medication-related causes.",
+            retry: "doctor"
+          }
+        ]
+      },
+
+      dentist_medhistory: {
+        speaker: "Dr. Lin",
+        role: "Dentist",
+        avatar: "👨‍⚕️",
+        avatarBg: "linear-gradient(135deg,#60a5fa,#2563eb)",
+        question: "That makes sense. Looking at her current medication history, which medicines would you like to pay the closest attention to when we think about possible drug-induced gingival enlargement?",
+        options: [
+          {
+            text: "I would pay special attention to her antihypertensive regimen, especially amlodipine, and also review when each medicine was started relative to the onset of gum swelling.",
+            correct: true,
+            feedback: "Correct. The timing of medication exposure matters. In this case, amlodipine is the key suspected drug and the chronology supports that suspicion.",
+            next: "dentist_culprit"
+          },
+          {
+            text: "The medication history is probably not useful here because gingival enlargement is usually unrelated to systemic medicines.",
+            correct: false,
+            feedback: "Incorrect. Medication history is central in this case because calcium channel blockers are a known cause of gingival enlargement.",
+            retry: "dentist_medhistory"
+          }
+        ]
+      },
+
+      dentist_culprit: {
+        speaker: "Dr. Lin",
+        role: "Dentist",
+        avatar: "👨‍⚕️",
+        avatarBg: "linear-gradient(135deg,#60a5fa,#2563eb)",
+        question: "Based on the current information, which medicine do you think is the most likely culprit?",
+        options: [
+          {
+            text: "Amlodipine is the most likely suspected drug.",
+            correct: true,
+            feedback: "Correct. Amlodipine is the leading suspected cause in this case and is consistent with the known association between calcium channel blockers and gingival overgrowth.",
+            next: "dentist_plan"
+          },
+          {
+            text: "Metformin is the most likely cause of the gingival enlargement.",
+            correct: false,
+            feedback: "Incorrect. Metformin is not the main suspected cause here.",
+            retry: "dentist_culprit"
+          },
+          {
+            text: "Ferrous sulfate is the most likely cause of the gingival enlargement.",
+            correct: false,
+            feedback: "Incorrect. Ferrous sulfate is not the main suspected cause in this scenario.",
+            retry: "dentist_culprit"
+          }
+        ]
+      },
+
+      dentist_plan: {
+        speaker: "Dr. Lin",
+        role: "Dentist",
+        avatar: "👨‍⚕️",
+        avatarBg: "linear-gradient(135deg,#60a5fa,#2563eb)",
+        question: "How should we handle this in practice so the patient receives both dental and medication-related support?",
+        options: [
+          {
+            text: "I will counsel the patient in more detail about the suspected drug cause and oral hygiene measures, and I will also contact her internal medicine physician so the antihypertensive regimen can be reviewed for a possible safer alternative.",
+            correct: true,
+            feedback: "Correct. This is the best collaborative plan: provide patient counseling, reinforce oral hygiene, and communicate with the treating physician before any medication change is considered.",
+            next: "patient_scene1"
+          },
+          {
+            text: "We should tell the patient to stop the suspected antihypertensive immediately before discussing it with her physician.",
+            correct: false,
+            feedback: "Incorrect. The patient should not stop cardiovascular medication on her own. The treating physician must review and prescribe any medication adjustment.",
+            retry: "dentist_plan"
+          }
+        ]
+      },
+
+      patient_scene1: {
+        speaker: "N. H. Nguyen",
+        role: "Patient",
+        avatar: "👩🏻",
+        avatarBg: "linear-gradient(135deg,#c084fc,#9333ea)",
+        question: "The dentist told me my swollen gums may be related to my medicine. Is that true? Did I do something wrong?",
+        options: [
+          {
+            text: "One of your medicines may be a major reason, especially the blood pressure medicine amlodipine. But that does not mean you did something wrong. We also need to pay attention to oral care habits, such as brushing and using dental floss or interdental cleaning, because these can make the gum swelling worse if cleaning becomes difficult.",
+            correct: true,
+            feedback: "Correct. This explains the likely drug-related cause while also emphasizing that daily oral hygiene remains important.",
+            next: "patient_scene1b"
+          },
+          {
+            text: "No, it is only because you did not clean your teeth well enough.",
+            correct: false,
+            feedback: "Not appropriate. This ignores the likely medication-related cause and places all blame on the patient.",
+            retry: "patient_scene1"
+          }
+        ]
+      },
+
+      patient_scene1b: {
+        speaker: "N. H. Nguyen",
+        role: "Patient",
+        avatar: "👩🏻",
+        avatarBg: "linear-gradient(135deg,#c084fc,#9333ea)",
+        question: "If my blood pressure medicine may be the main reason, should I stop taking it now so my gums can improve faster?",
+        options: [
+          {
+            text: "No. Please do not stop any cardiovascular medicine by yourself. I will communicate with your physician first, and any medication change should only be made after your doctor evaluates you and prescribes an appropriate alternative.",
+            correct: true,
+            feedback: "Correct. This is an essential safety message. The patient should never stop antihypertensive therapy on her own.\n\nScene 1 is now complete. We will now move to the patient’s later follow-up visit.",
+            unlockScene2: true
+          },
+          {
+            text: "Yes, you can stop it today and wait until the next visit.",
+            correct: false,
+            feedback: "Unsafe. The patient should not discontinue cardiovascular medication without medical review and a new prescription plan.",
+            retry: "patient_scene1b"
+          }
+        ]
+      },
+
+      osteoporosis: {
+        speaker: "N. H. Nguyen",
+        role: "Patient",
+        avatar: "👩🏻",
+        avatarBg: "linear-gradient(135deg,#c084fc,#9333ea)",
+        question: "I came back because I was newly diagnosed with osteoporosis and my doctor started alendronate. I am worried because I had esophagitis before and sometimes tablets feel stuck in my throat.\n\nHow should I use this medicine safely?",
+        options: [
+          {
+            text: "You should take it on an empty stomach with a full glass of plain water, and then stay upright for at least 30 minutes. Do not lie down right after taking it.",
+            correct: true,
+            feedback: "Correct. These are the core administration instructions to reduce esophageal retention and injury.",
+            next: "alendronate_interaction"
+          },
+          {
+            text: "You can take it at bedtime with a small sip of water.",
+            correct: false,
+            feedback: "Incorrect. Bedtime administration and too little water increase the risk of esophageal injury.",
+            retry: "osteoporosis"
+          },
+          {
+            text: "It is better to take it together with breakfast and milk.",
+            correct: false,
+            feedback: "Incorrect. Alendronate should be taken fasting, not with food or milk.",
+            retry: "osteoporosis"
+          }
+        ]
+      },
+
+      alendronate_interaction: {
+        speaker: "N. H. Nguyen",
+        role: "Patient",
+        avatar: "👩🏻",
+        avatarBg: "linear-gradient(135deg,#c084fc,#9333ea)",
+        question: "I also take calcium supplements. Can I take them at the same time for convenience?",
+        options: [
+          {
+            text: "No. Calcium supplements should not be taken together with alendronate because they can reduce alendronate absorption. They need to be separated.",
+            correct: true,
+            feedback: "Correct. This is an important counseling point because calcium can significantly interfere with alendronate absorption.",
+            next: "alendronate_adherence"
+          },
+          {
+            text: "Yes, taking them together is fine and may help protect the stomach.",
+            correct: false,
+            feedback: "Incorrect. Calcium should not be co-administered with alendronate.",
+            retry: "alendronate_interaction"
+          }
+        ]
+      },
+
+      alendronate_adherence: {
+        speaker: "N. H. Nguyen",
+        role: "Patient",
+        avatar: "👩🏻",
+        avatarBg: "linear-gradient(135deg,#c084fc,#9333ea)",
+        question: "Alendronate is prescribed once weekly. Which pharmacist recommendation is most appropriate to improve adherence?",
+        options: [
+          {
+            text: "Take the tablet whenever you remember during the week.",
+            correct: false,
+            feedback: "Incorrect. Weekly bisphosphonate therapy should be taken in a structured way, not at random times.",
+            retry: "alendronate_adherence"
+          },
+          {
+            text: "Choose a fixed day each week and link it to a regular routine.",
+            correct: true,
+            feedback: "Correct. Linking once-weekly treatment to a fixed day and routine is the best pharmacist recommendation to improve adherence.",
+            next: "alendronate_final"
+          },
+          {
+            text: "Take two tablets the next day if a dose is missed.",
+            correct: false,
+            feedback: "Incorrect. Doubling the dose is not appropriate.",
+            retry: "alendronate_adherence"
+          },
+          {
+            text: "Stop the medicine if you forget once.",
+            correct: false,
+            feedback: "Incorrect. Missing one dose does not mean therapy should be stopped altogether.",
+            retry: "alendronate_adherence"
+          }
+        ]
+      },
+
+      alendronate_final: {
+        speaker: "N. H. Nguyen",
+        role: "Patient",
+        avatar: "👩🏻",
+        avatarBg: "linear-gradient(135deg,#c084fc,#9333ea)",
+        question: "Sometimes tablets still feel stuck in my throat, and I usually do not drink much water with medicines. What should I do if I am not sure I can follow all of these instructions safely?",
+        options: [
+          {
+            text: "We should discuss the benefits, risks, and practicality carefully. If taking oral alendronate is not safe or feasible for you, your physician may need to consider another treatment option, such as a non-oral therapy.",
+            correct: true,
+            feedback: "Excellent. This is the right pharmacist approach: assess feasibility, not just theoretical efficacy, and coordinate with the physician when another option may be safer.",
+            completeScenes: true
+          },
+          {
+            text: "You should keep taking it exactly as prescribed even if it feels unsafe, because the instruction must always be followed no matter what.",
+            correct: false,
+            feedback: "Incorrect. If administration is not feasible or appears unsafe, this should be discussed with the treating physician.",
+            retry: "alendronate_final"
+          }
+        ]
+      }
+    };
+
+    const extensionQuestions = [
+      {
+        question: "Which nutritional deficiency is known to contribute to gingival swelling and bleeding and should be considered in the differential diagnosis?",
+        options: [
+          { text: "Vitamin A deficiency", correct: false },
+          { text: "Vitamin B12 deficiency", correct: false },
+          { text: "Vitamin C deficiency", correct: true },
+          { text: "Vitamin D deficiency", correct: false }
+        ],
+        feedback: "Correct. Vitamin C deficiency is classically associated with gingival swelling and bleeding and should be considered in the differential diagnosis."
+      },
+      {
+        question: "Which of the following medications are typically associated with gingival overgrowth?",
+        options: [
+          { text: "Phenytoin, cyclosporin, CCB (such as nifedipine)", correct: true },
+          { text: "Valproate, tacrolimus, captopril", correct: false },
+          { text: "Carbamazepine, cyclosporin, hydrochlorothiazide", correct: false },
+          { text: "Phenytoin, tacrolimus, hydrochlorothiazide", correct: false }
+        ],
+        feedback: "Correct. The classic medication groups associated with gingival overgrowth include phenytoin, cyclosporin, and calcium channel blockers such as nifedipine."
+      },
+      {
+        question: "Addition to bisphosphonates, which of the following medications are associated with gastrointestinal tract mucosal injuries or drug-induced esophagitis?",
+        options: [
+          { text: "Carbamazepine, hydrochlorothiazide, sulpiride, macrolides", correct: false },
+          { text: "Sulpiride, pantoprazole, pyridostigmine, calcium carbonate", correct: false },
+          { text: "Carbamazepine, cyclosporin, pyridostigmine, calcium carbonate", correct: false },
+          { text: "NSAIDs, ferrous sulfate, sunitinib, potassium chloride, tetracycline", correct: true }
+        ],
+        feedback: "Correct. NSAIDs, ferrous sulfate, potassium chloride, tetracycline, and several other agents are recognized causes of gastrointestinal mucosal injury or drug-induced esophagitis."
+      }
+    ];
+
+    const quizState = {
+      current: 0,
+      questions: [
+        {
+          question: "Which medication is the main suspected cause of gingival enlargement in this case?",
+          type: "single",
+          options: [
+            { text: "Metformin", correct: false },
+            { text: "Amlodipine", correct: true },
+            { text: "Ferrous sulfate", correct: false },
+            { text: "Telmisartan", correct: false }
+          ],
+          feedback: "Correct. Amlodipine is the main suspected drug in this case."
+        },
+        {
+          question: "Which counseling point about oral hygiene is appropriate?",
+          type: "single",
+          options: [
+            { text: "Medication is the only factor, so oral hygiene does not matter", correct: false },
+            { text: "Dental floss or interdental cleaning may still be important because poor plaque control can worsen gingival enlargement", correct: true },
+            { text: "The patient should stop brushing until all swelling disappears", correct: false },
+            { text: "Oral hygiene is unnecessary if the medication is changed", correct: false }
+          ],
+          feedback: "Correct. Oral hygiene, including flossing or interdental cleaning, remains important."
+        },
+        {
+          question: "What is the correct advice about the suspected cardiovascular medicine?",
+          type: "single",
+          options: [
+            { text: "Stop it immediately without telling the physician", correct: false },
+            { text: "Do not stop it on your own; the treating physician must review and prescribe any alternative", correct: true },
+            { text: "Take it every other day without consulting anyone", correct: false },
+            { text: "The dentist alone should discontinue it", correct: false }
+          ],
+          feedback: "Correct. The patient should never stop cardiovascular therapy without physician review."
+        },
+        {
+          question: "Which instruction is correct for alendronate?",
+          type: "single",
+          options: [
+            { text: "Take it at bedtime with little water", correct: false },
+            { text: "Take it fasting with a full glass of water and stay upright for at least 30 minutes", correct: true },
+            { text: "Take it together with calcium supplements", correct: false },
+            { text: "Take it with breakfast and milk", correct: false }
+          ],
+          feedback: "Correct. This is the standard safe administration method for alendronate."
+        },
+        {
+          question: "Which of the following statements are correct? Select all that apply.",
+          type: "multi",
+          options: [
+            { text: "Previous esophagitis increases concern about alendronate use", correct: true },
+            { text: "Calcium supplements can reduce alendronate absorption", correct: true },
+            { text: "If swallowing instructions are not feasible, alternative therapy may need to be discussed", correct: true },
+            { text: "Patients should continue alendronate even if they feel it is unsafe to swallow", correct: false }
+          ],
+          feedback: "Correct. This case emphasizes esophageal risk, interaction with calcium, and the importance of assessing whether oral therapy is practically safe."
+        }
+      ]
+    };
+
+    const extensionState = {
+      current: 0
+    };
+
+    function playWrongAnswerAudio(){
+      const text = "As a pharmacist, you should consider carefully before every response";
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function shuffleArray(array){
+      const arr = [...array];
+      for(let i = arr.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function canOpenPatient(){
+      return state.stageCompleted.has("scene1_dentist_complete");
+    }
+
+    function currentPatientKey(){
+      if (!state.stageCompleted.has("scene1_patient_start")) return "patient_scene1";
+      if (!state.stageCompleted.has("scene1_complete")) return "patient_scene1b";
+      return state.scene2Unlocked ? "osteoporosis" : "patient_scene1";
+    }
+
+    function getProgressText(){
+      if(state.extensionCompleted) return "5 / 5";
+      if(state.extensionUnlocked) return "4 / 5";
+      if(state.scene2Unlocked) return "2 / 5";
+      if(state.stageCompleted.has("scene1_dentist_complete")) return "1 / 5";
+      return "0 / 5";
+    }
+
+    function updateStats(){
+      document.getElementById("stat-total").textContent = stats.total;
+      document.getElementById("stat-correct").textContent = stats.correct;
+      document.getElementById("stat-wrong").textContent = stats.wrong;
+      const progress = getProgressText();
+      document.getElementById("stat-progress").textContent = progress;
+      document.getElementById("progress-text").textContent = progress;
+    }
+
+    function hideAllInteractive(){
+      document.getElementById("dialogue-box").classList.add("hidden");
+      document.getElementById("scene2-panel").classList.add("hidden");
+      document.getElementById("quiz-box").classList.add("hidden");
+      document.getElementById("extension-panel").classList.add("hidden");
+    }
+
+    function startDialogue(key){
+      state.activeMode = "dialogue";
+      hideAllInteractive();
+      const d = dialogues[key];
+      state.currentKey = key;
+
+      const box = document.getElementById("dialogue-box");
+      box.classList.remove("hidden");
+
+      const av = document.getElementById("speaker-avatar");
+      av.style.background = d.avatarBg;
+      av.textContent = d.avatar;
+
+      document.getElementById("speaker-name").textContent = d.speaker;
+      document.getElementById("speaker-role").textContent = d.role;
+      document.getElementById("question-text").textContent = d.question;
+
+      const optionsEl = document.getElementById("answer-options");
+      optionsEl.innerHTML = "";
+
+      const shuffledOptions = shuffleArray(d.options);
+
+      shuffledOptions.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "opt-btn";
+        btn.textContent = `${String.fromCharCode(65 + idx)}. ${opt.text}`;
+        btn.onclick = () => selectDialogueOption(opt, key);
+        optionsEl.appendChild(btn);
+      });
+
+      const fb = document.getElementById("feedback-box");
+      fb.className = "feedback";
+      document.getElementById("instruction-overlay").style.display = "block";
+    }
+
+    function selectDialogueOption(opt, key){
+      stats.total += 1;
+      const fb = document.getElementById("feedback-box");
+      const title = document.getElementById("feedback-title");
+      const text = document.getElementById("feedback-text");
+      const btn = document.getElementById("feedback-btn");
+
+      if (opt.correct){
+        stats.correct += 1;
+        fb.className = "feedback good show";
+        title.textContent = "Correct";
+        text.textContent = opt.feedback;
+
+        if (key === "dentist_plan") state.stageCompleted.add("scene1_dentist_complete");
+        if (key === "patient_scene1") state.stageCompleted.add("scene1_patient_start");
+
+        if (opt.endResponse){
+          btn.textContent = "Close";
+          btn.onclick = continueLearning;
+        } else if (opt.unlockScene2){
+          state.stageCompleted.add("scene1_complete");
+          state.scene2Unlocked = true;
+          btn.textContent = "Open Scene 2";
+          btn.onclick = () => {
+            hideAllInteractive();
+            document.getElementById("scene2-panel").classList.remove("hidden");
+            updateStats();
+          };
+        } else if (opt.completeScenes){
+          state.extensionUnlocked = true;
+          btn.textContent = "Open Extended Questions";
+          btn.onclick = () => {
+            startExtensionQuestions();
+            updateStats();
+          };
+        } else if (opt.next){
+          btn.textContent = "Next";
+          btn.onclick = () => {
+            startDialogue(opt.next);
+            updateStats();
+          };
+        } else {
+          btn.textContent = "Continue";
+          btn.onclick = continueLearning;
+        }
+      } else {
+        stats.wrong += 1;
+        playWrongAnswerAudio();
+        fb.className = "feedback bad show";
+        title.textContent = "Not quite";
+        text.textContent = opt.feedback;
+        btn.textContent = "Try Again";
+        btn.onclick = () => {
+          startDialogue(opt.retry || key);
+          updateStats();
+        };
+      }
+
+      updateStats();
+    }
+
+    function continueLearning(){
+      hideAllInteractive();
+    }
+
+    function startScene2(){
+      startDialogue("osteoporosis");
+    }
+
+    function startExtensionQuestions(){
+      state.activeMode = "extension";
+      extensionState.current = 0;
+      renderExtensionQuestion();
+    }
+
+    function renderExtensionQuestion(){
+      hideAllInteractive();
+      const panel = document.getElementById("extension-panel");
+      const q = extensionQuestions[extensionState.current];
+      const shuffled = shuffleArray(q.options.map((opt, originalIndex) => ({ ...opt, originalIndex })));
+
+      let html = `
+        <h3>Extended Questions</h3>
+        <div class="q-count">Question ${extensionState.current + 1} of ${extensionQuestions.length}</div>
+        <div class="question-box">${q.question}</div>
+        <div class="options">
+      `;
+
+      shuffled.forEach((opt, idx) => {
+        const letter = String.fromCharCode(65 + idx);
+        html += `<button class="opt-btn" onclick="submitExtensionAnswer(${opt.originalIndex})">${letter}. ${opt.text}</button>`;
+      });
+
+      html += `</div><div class="feedback" id="extension-feedback"></div>`;
+      panel.innerHTML = html;
+      panel.classList.remove("hidden");
+    }
+
+    function submitExtensionAnswer(index){
+      const q = extensionQuestions[extensionState.current];
+      const correct = q.options[index].correct;
+      stats.total += 1;
+
+      if(correct){
+        stats.correct += 1;
+      } else {
+        stats.wrong += 1;
+        playWrongAnswerAudio();
+      }
+
+      updateStats();
+
+      const fb = document.getElementById("extension-feedback");
+      fb.className = `feedback ${correct ? 'good' : 'bad'} show`;
+      fb.innerHTML = `
+        <div class="feedback-title">${correct ? 'Correct' : 'Not Quite'}</div>
+        <div class="feedback-text">${q.feedback}</div>
+        <div style="margin-top:12px">
+          ${
+            correct
+              ? (extensionState.current < extensionQuestions.length - 1
+                  ? `<button class="primary-btn" onclick="nextExtensionQuestion()">Next Question</button>`
+                  : `<button class="primary-btn" onclick="completeExtension()">Finish Extended Questions</button>`)
+              : `<button class="primary-btn" onclick="renderExtensionQuestion()">Try Again</button>`
+          }
+        </div>
+      `;
+    }
+
+    function nextExtensionQuestion(){
+      extensionState.current += 1;
+      renderExtensionQuestion();
+    }
+
+    function completeExtension(){
+      state.extensionCompleted = true;
+      showCompletion();
+    }
+
+    function showCompletion(){
+      document.getElementById("overview-card")?.classList.remove("hidden");
+      hideAllInteractive();
+      const box = document.getElementById("dialogue-box");
+      box.classList.remove("hidden");
+      box.innerHTML = `
+        <div class="final-panel">
+          <div style="font-size:56px">🎉</div>
+          <h2>Congratulations—Learning Complete!</h2>
+          <div class="small-muted">You've successfully completed all dialogue scenarios and extended questions.</div>
+
+          <div class="takeaway">
+            <div style="font-weight:700;color:#67e8f9;margin-bottom:8px">Takeaway Information / Teaching Points</div>
+            <div>✓ Amlodipine is a well-known cause of drug-induced gingival enlargement.</div>
+            <div>✓ Oral hygiene remains important; brushing alone may not be enough, and dental floss or interdental cleaning may help reduce inflammation.</div>
+            <div>✓ Patients should never stop cardiovascular medicine on their own. Medication adjustment must be discussed with the treating physician.</div>
+            <div>✓ Good pharmacist care includes communication with both the dentist and the internal medicine physician.</div>
+            <div>✓ Alendronate can irritate the esophagus, especially in patients with previous esophagitis.</div>
+            <div>✓ Alendronate should be taken on an empty stomach with a full glass of water, and the patient must remain upright for at least 30 minutes.</div>
+            <div>✓ Calcium supplements should not be taken together with alendronate because they reduce absorption.</div>
+            <div>✓ Once-weekly alendronate adherence is improved by linking the dose to a fixed day and routine.</div>
+            <div>✓ If oral alendronate is not safe or practical, alternative therapy should be discussed with the physician.</div>
+            <div>✓ Vitamin C deficiency should be considered in the differential diagnosis of gingival swelling and bleeding.</div>
+            <div>✓ Classic drug groups associated with gingival overgrowth include phenytoin, cyclosporin, and calcium channel blockers.</div>
+            <div>✓ Several non-bisphosphonate medications can also cause gastrointestinal mucosal injury or drug-induced esophagitis.</div>
+          </div>
+
+          <div style="margin-top:16px">
+            <button class="primary-btn" onclick="resetApp()">Start Over</button>
+          </div>
+        </div>
+      `;
+      updateStats();
+    }
+
+    function resetApp(){
+      stats.total = 0;
+      stats.correct = 0;
+      stats.wrong = 0;
+
+      state.currentKey = null;
+      state.stageCompleted = new Set();
+      state.scene2Unlocked = false;
+      state.extensionUnlocked = false;
+      state.extensionCompleted = false;
+      state.activeMode = "dialogue";
+
+      extensionState.current = 0;
+
+      document.getElementById("overview-card")?.classList.add("hidden");
+      document.getElementById("dialogue-box").innerHTML = `
+        <div class="speaker-row">
+          <div class="speaker-avatar" id="speaker-avatar"></div>
+          <div>
+            <div class="speaker-name" id="speaker-name"></div>
+            <div class="speaker-role" id="speaker-role"></div>
+          </div>
+        </div>
+        <div class="question-box" id="question-text"></div>
+        <div class="options" id="answer-options"></div>
+        <div class="feedback" id="feedback-box">
+          <div class="feedback-title" id="feedback-title"></div>
+          <div class="feedback-text" id="feedback-text"></div>
+          <div style="margin-top:12px">
+            <button class="primary-btn" id="feedback-btn">Continue</button>
+          </div>
+        </div>
+      `;
+      hideAllInteractive();
+      updateStats();
+    }
+
+    function startQuizMode(){
+      state.activeMode = "quiz";
+      hideAllInteractive();
+      quizState.current = 0;
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion(){
+      const q = quizState.questions[quizState.current];
+      const box = document.getElementById("quiz-box");
+      box.classList.remove("hidden");
+
+      let html = `
+        <h3>Clinical Quiz</h3>
+        <div class="q-count">Question ${quizState.current + 1} of ${quizState.questions.length}</div>
+        <div class="question-box">${q.question}</div>
+        <div class="options" id="quiz-options">
+      `;
+
+      const shuffledQuizOptions = shuffleArray(
+        q.options.map((opt, originalIndex) => ({ ...opt, originalIndex }))
+      );
+
+      shuffledQuizOptions.forEach((opt, idx) => {
+        const letter = String.fromCharCode(65 + idx);
+        if (q.type === "multi"){
+          html += `
+            <label class="opt-btn" style="display:block;cursor:pointer">
+              <input type="checkbox" data-original-idx="${opt.originalIndex}" style="margin-right:10px;transform:scale(1.1)">
+              ${letter}. ${opt.text}
+            </label>
+          `;
+        } else {
+          html += `<button class="opt-btn" onclick="submitQuizSingle(${opt.originalIndex})">${letter}. ${opt.text}</button>`;
+        }
+      });
+
+      html += `</div>`;
+
+      if (q.type === "multi"){
+        html += `<div class="quiz-actions"><button class="primary-btn" onclick="submitQuizMulti()">Submit Answer</button></div>`;
+      }
+
+      html += `<div class="feedback" id="quiz-feedback"></div>`;
+      box.innerHTML = html;
+    }
+
+    function submitQuizSingle(index){
+      const q = quizState.questions[quizState.current];
+      const correct = q.options[index].correct;
+      stats.total += 1;
+      if (correct) {
+        stats.correct += 1;
+      } else {
+        stats.wrong += 1;
+        playWrongAnswerAudio();
+      }
+      updateStats();
+      renderQuizFeedback(correct, q.feedback);
+    }
+
+    function submitQuizMulti(){
+      const q = quizState.questions[quizState.current];
+
+      const checked = [...document.querySelectorAll('#quiz-options input[type="checkbox"]')]
+        .filter(el => el.checked)
+        .map(el => Number(el.dataset.originalIdx));
+
+      const correctIdx = q.options
+        .map((o, i) => o.correct ? i : null)
+        .filter(v => v !== null);
+
+      const correct = checked.length === correctIdx.length &&
+        checked.every(i => correctIdx.includes(i));
+
+      stats.total += 1;
+      if (correct) {
+        stats.correct += 1;
+      } else {
+        stats.wrong += 1;
+        playWrongAnswerAudio();
+      }
+      updateStats();
+      renderQuizFeedback(correct, q.feedback);
+    }
+
+    function renderQuizFeedback(correct, message){
+      const fb = document.getElementById("quiz-feedback");
+      fb.className = `feedback ${correct ? 'good' : 'bad'} show`;
+      fb.innerHTML = `
+        <div class="feedback-title">${correct ? 'Correct' : 'Not Quite'}</div>
+        <div class="feedback-text">${message}</div>
+        <div style="margin-top:12px">
+          ${
+            quizState.current < quizState.questions.length - 1
+              ? `<button class="primary-btn" onclick="nextQuizQuestion()">Next Question</button>`
+              : `<button class="primary-btn" onclick="finishQuiz()">Complete Quiz</button>`
+          }
+        </div>
+      `;
+    }
+
+    function nextQuizQuestion(){
+      quizState.current += 1;
+      renderQuizQuestion();
+    }
+
+    function finishQuiz(){
+      const box = document.getElementById("quiz-box");
+      box.innerHTML = `
+        <div class="final-panel">
+          <div style="font-size:56px">🎓</div>
+          <h2>Quiz Complete!</h2>
+          <div class="small-muted">You've successfully completed all quiz questions.</div>
+          <div class="takeaway">
+            <div style="font-weight:700;color:#67e8f9;margin-bottom:8px">Quiz Summary</div>
+            <div>Total Questions Attempted: ${stats.total}</div>
+            <div>Correct Answers: ${stats.correct}</div>
+            <div>Wrong Answers: ${stats.wrong}</div>
+          </div>
+          <div style="margin-top:16px">
+            <button class="primary-btn" onclick="hideAllInteractive()">Back to Main Scene</button>
+          </div>
+        </div>
+      `;
+      updateStats();
+    }
+
+    updateStats();
+  </script>
+</body>
+</html>
