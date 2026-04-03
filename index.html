@@ -89,6 +89,36 @@
     }
     .case-bg strong{color:#67e8f9}
 
+    .user-session-card{
+      margin-top:16px;
+      background:rgba(2,6,23,.45);
+      border:1px solid rgba(148,163,184,.18);
+      border-radius:18px;
+      padding:14px 16px;
+    }
+    .user-session-grid{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:12px;
+      align-items:center;
+    }
+    .user-session-title{
+      font-weight:700;
+      color:#67e8f9;
+      margin-bottom:6px;
+      font-size:15px;
+    }
+    .user-session-meta{
+      font-size:13px;
+      color:#cbd5e1;
+      line-height:1.6;
+    }
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
     .main{
       display:grid;
       grid-template-columns:minmax(320px, 1fr) minmax(560px, 2fr);
@@ -369,7 +399,7 @@
       backdrop-filter:blur(6px);
     }
 
-    .dialogue-box, .scene2-panel, .quiz-box, .extension-panel{
+    .dialogue-box, .scene2-panel, .quiz-box, .extension-panel, .results-panel{
       background:var(--panel);
       border:1px solid var(--line);
       border-radius:20px;
@@ -469,8 +499,10 @@
     }
 
     .quiz-actions{margin-top:12px}
-    .quiz-box h3, .extension-panel h3{margin:0 0 8px}
+    .quiz-box h3, .extension-panel h3, .results-panel h3{margin:0 0 8px}
     .q-count{color:var(--muted);font-size:13px;margin-bottom:10px}
+
+    .table-wrap{overflow-x:auto}
 
     .license-panel{
       margin-top:18px;
@@ -518,10 +550,63 @@
       text-decoration:underline;
     }
 
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(2,6,23,.72);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:9999;
+      backdrop-filter:blur(6px);
+    }
+    .modal-card{
+      width:min(460px,100%);
+      background:var(--panel-2);
+      border:1px solid #475569;
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+    .modal-card h2{
+      margin:0 0 10px;
+      font-size:22px;
+    }
+    .modal-card p{
+      margin:0 0 16px;
+      color:#cbd5e1;
+      line-height:1.6;
+      font-size:14px;
+    }
+    .form-grid{display:grid;gap:12px}
+    .form-group label{
+      display:block;
+      margin-bottom:6px;
+      font-size:13px;
+      color:#cbd5e1;
+    }
+    .form-group input{
+      width:100%;
+      padding:11px 12px;
+      border-radius:12px;
+      border:1px solid #475569;
+      background:#0f172a;
+      color:#e5eefb;
+      font-size:14px;
+    }
+    .modal-error{
+      min-height:20px;
+      margin-top:10px;
+      font-size:13px;
+      color:#fca5a5;
+    }
+
     @media (max-width: 1080px){
       .main{grid-template-columns:1fr}
       .right-col{position:static}
       .sim-grid{grid-template-columns:1fr}
+      .user-session-grid{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -550,6 +635,20 @@
         The dentist suspected that the gingival enlargement might be related to medications and asked the clinical pharmacist to review the patient's medication history and possible drug-related causes.<br><br>
         The patient has a history of hypertension, type 2 diabetes, GERD with previous esophagitis, and iron-deficiency anemia. Her current medications include amlodipine, telmisartan, metformin, indapamide, and iron supplements.<br><br>
         The pharmacist must discuss the case with the dentist, evaluate possible drug-related causes, counsel the patient about oral hygiene and medication safety, and later provide counseling about newly prescribed alendronate for osteoporosis.
+      </div>
+
+      <div class="user-session-card">
+        <div class="user-session-grid">
+          <div>
+            <div class="user-session-title">Current User</div>
+            <div class="user-session-meta" id="current-user-display">No active user</div>
+          </div>
+          <div class="toolbar">
+            <button class="primary-btn" type="button" onclick="exportCurrentUserCSV()">Export My Results</button>
+            <button class="primary-btn" type="button" onclick="switchUser()">Switch User</button>
+            <button class="secondary-btn" type="button" onclick="clearCurrentUserData()">Clear My Data</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -970,6 +1069,26 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
 
         <div class="extension-panel hidden" id="extension-panel"></div>
         <div class="quiz-box hidden" id="quiz-box"></div>
+
+        <div class="results-panel hidden" id="results-panel">
+          <h3>Detailed Results</h3>
+          <div id="results-summary" class="small-muted" style="margin-bottom:12px"></div>
+          <div class="table-wrap">
+            <table id="results-table">
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Question</th>
+                  <th>Selected answer</th>
+                  <th>Correct answer</th>
+                  <th>Result</th>
+                  <th>Submitted time</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
       </section>
     </section>
 
@@ -1010,12 +1129,40 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
     </section>
   </div>
 
+  <div class="modal-backdrop" id="login-modal">
+    <div class="modal-card">
+      <h2>Enter Class and Group Name</h2>
+      <p>Please enter your class and group name before accessing the case. You will only be able to view and export your own results.</p>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="modal-class-name">Class</label>
+          <input id="modal-class-name" type="text" placeholder="Enter class">
+        </div>
+
+        <div class="form-group">
+          <label for="modal-group-name">Group name</label>
+          <input id="modal-group-name" type="text" placeholder="Enter group name">
+        </div>
+      </div>
+
+      <div class="modal-error" id="modal-error"></div>
+
+      <div style="margin-top:14px">
+        <button class="primary-btn" type="button" onclick="submitUserIdentity()">Enter Case</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const stats = {
       total: 0,
       correct: 0,
       wrong: 0
     };
+
+    let currentUser = null;
+    let responseLog = [];
 
     const state = {
       currentKey: null,
@@ -1405,6 +1552,227 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
       return arr;
     }
 
+    function getUserStorageKey(user){
+      return `pharmasim_user_${encodeURIComponent(user.className)}__${encodeURIComponent(user.groupName)}`;
+    }
+
+    function formatDateTime(ts){
+      const d = new Date(ts);
+      const pad = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
+    function updateCurrentUserDisplay(){
+      const el = document.getElementById("current-user-display");
+      if (!currentUser) {
+        el.textContent = "No active user";
+        return;
+      }
+      el.innerHTML = `Class: <strong>${currentUser.className}</strong><br>Group name: <strong>${currentUser.groupName}</strong>`;
+    }
+
+    function saveCurrentUserSession(){
+      if (!currentUser) return;
+      localStorage.setItem("pharmasim_current_user_gingival", JSON.stringify(currentUser));
+    }
+
+    function saveCurrentUserData(){
+      if (!currentUser) return;
+      const payload = {
+        currentUser,
+        stats: { ...stats },
+        responseLog: [...responseLog],
+        state: {
+          stageCompleted: [...state.stageCompleted],
+          scene2Unlocked: state.scene2Unlocked,
+          extensionUnlocked: state.extensionUnlocked,
+          extensionCompleted: state.extensionCompleted
+        }
+      };
+      localStorage.setItem(getUserStorageKey(currentUser), JSON.stringify(payload));
+    }
+
+    function renderDetailedResults(){
+      const panel = document.getElementById("results-panel");
+      const tbody = document.querySelector("#results-table tbody");
+      const summary = document.getElementById("results-summary");
+
+      tbody.innerHTML = "";
+
+      responseLog.forEach((row, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${row.question}</td>
+          <td>${row.selectedAnswer || ""}</td>
+          <td>${row.correctAnswer || ""}</td>
+          <td style="color:${row.result === "Correct" ? "#86efac" : "#fca5a5"};font-weight:600">${row.result}</td>
+          <td>${formatDateTime(row.timestamp)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const correct = responseLog.filter(r => r.result === "Correct").length;
+      const incorrect = responseLog.filter(r => r.result === "Incorrect").length;
+
+      summary.innerHTML = `
+        Total responses: <strong>${responseLog.length}</strong><br>
+        Correct: <strong style="color:#86efac">${correct}</strong><br>
+        Incorrect: <strong style="color:#fca5a5">${incorrect}</strong>
+      `;
+
+      panel.classList.toggle("hidden", responseLog.length === 0);
+    }
+
+    function logResponse(question, selectedAnswer, correctAnswer, isCorrect){
+      responseLog.push({
+        question,
+        selectedAnswer,
+        correctAnswer,
+        result: isCorrect ? "Correct" : "Incorrect",
+        timestamp: new Date().toISOString()
+      });
+      saveCurrentUserData();
+      renderDetailedResults();
+    }
+
+    function requireCurrentUser(){
+      if (currentUser) return true;
+      document.getElementById("login-modal").classList.remove("hidden");
+      return false;
+    }
+
+    function submitUserIdentity(){
+      const className = document.getElementById("modal-class-name").value.trim();
+      const groupName = document.getElementById("modal-group-name").value.trim();
+      const error = document.getElementById("modal-error");
+
+      if (!className || !groupName) {
+        error.textContent = "Please enter both Class and Group name.";
+        return;
+      }
+
+      currentUser = { className, groupName };
+      saveCurrentUserSession();
+
+      const stored = JSON.parse(localStorage.getItem(getUserStorageKey(currentUser)) || "null");
+
+      if (stored) {
+        responseLog = Array.isArray(stored.responseLog) ? stored.responseLog : [];
+        stats.total = stored.stats?.total || 0;
+        stats.correct = stored.stats?.correct || 0;
+        stats.wrong = stored.stats?.wrong || 0;
+        state.stageCompleted = new Set(stored.state?.stageCompleted || []);
+        state.scene2Unlocked = !!stored.state?.scene2Unlocked;
+        state.extensionUnlocked = !!stored.state?.extensionUnlocked;
+        state.extensionCompleted = !!stored.state?.extensionCompleted;
+      } else {
+        responseLog = [];
+        stats.total = 0;
+        stats.correct = 0;
+        stats.wrong = 0;
+        state.currentKey = null;
+        state.stageCompleted = new Set();
+        state.scene2Unlocked = false;
+        state.extensionUnlocked = false;
+        state.extensionCompleted = false;
+        state.activeMode = "dialogue";
+      }
+
+      updateCurrentUserDisplay();
+      updateStats();
+      renderDetailedResults();
+      error.textContent = "";
+      document.getElementById("login-modal").classList.add("hidden");
+    }
+
+    function switchUser(){
+      currentUser = null;
+      responseLog = [];
+      resetApp(false);
+      updateCurrentUserDisplay();
+      renderDetailedResults();
+      document.getElementById("modal-class-name").value = "";
+      document.getElementById("modal-group-name").value = "";
+      localStorage.removeItem("pharmasim_current_user_gingival");
+      document.getElementById("login-modal").classList.remove("hidden");
+    }
+
+    function clearCurrentUserData(){
+      if (!currentUser) {
+        alert("No current user found.");
+        return;
+      }
+
+      if (!confirm("Delete all saved data for the current user?")) return;
+
+      localStorage.removeItem(getUserStorageKey(currentUser));
+      responseLog = [];
+      resetApp(false);
+      renderDetailedResults();
+      alert("Current user data deleted.");
+    }
+
+    function exportCurrentUserCSV() {
+      if (!currentUser) {
+        alert("No current user found.");
+        return;
+      }
+
+      if (!responseLog.length) {
+        alert("No saved results for the current user.");
+        return;
+      }
+
+      const rows = [[
+        "Group name",
+        "Class",
+        "Submitted time",
+        "Question",
+        "Selected answer",
+        "Correct answer",
+        "Result"
+      ]];
+
+      responseLog.forEach(r => {
+        rows.push([
+          currentUser.groupName,
+          currentUser.className,
+          formatDateTime(r.timestamp),
+          r.question,
+          r.selectedAnswer,
+          r.correctAnswer,
+          r.result
+        ]);
+      });
+
+      const csv = rows.map(row =>
+        row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")
+      ).join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${currentUser.groupName}_${currentUser.className}_results.csv`.replace(/\s+/g, "_");
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function preloadCurrentUser(){
+      const saved = JSON.parse(localStorage.getItem("pharmasim_current_user_gingival") || "null");
+      if (!saved) {
+        document.getElementById("login-modal").classList.remove("hidden");
+        updateCurrentUserDisplay();
+        return;
+      }
+
+      document.getElementById("modal-class-name").value = saved.className || "";
+      document.getElementById("modal-group-name").value = saved.groupName || "";
+      currentUser = saved;
+      submitUserIdentity();
+    }
+
     function canOpenPatient(){
       return state.stageCompleted.has("scene1_dentist_complete");
     }
@@ -1430,6 +1798,7 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
       const progress = getProgressText();
       document.getElementById("stat-progress").textContent = progress;
       document.getElementById("progress-text").textContent = progress;
+      saveCurrentUserData();
     }
 
     function hideAllInteractive(){
@@ -1440,6 +1809,7 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
     }
 
     function startDialogue(key){
+      if (!requireCurrentUser()) return;
       state.activeMode = "dialogue";
       hideAllInteractive();
       const d = dialogues[key];
@@ -1476,6 +1846,17 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
 
     function selectDialogueOption(opt, key){
       stats.total += 1;
+
+      const dialogue = dialogues[key];
+      const correctOption = dialogue.options.find(o => o.correct);
+
+      logResponse(
+        dialogue.question,
+        opt.text,
+        correctOption ? correctOption.text : "",
+        !!opt.correct
+      );
+
       const fb = document.getElementById("feedback-box");
       const title = document.getElementById("feedback-title");
       const text = document.getElementById("feedback-text");
@@ -1533,6 +1914,7 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
       }
 
       updateStats();
+      renderDetailedResults();
     }
 
     function continueLearning(){
@@ -1540,10 +1922,12 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
     }
 
     function startScene2(){
+      if (!requireCurrentUser()) return;
       startDialogue("osteoporosis");
     }
 
     function startExtensionQuestions(){
+      if (!requireCurrentUser()) return;
       state.activeMode = "extension";
       extensionState.current = 0;
       renderExtensionQuestion();
@@ -1575,6 +1959,15 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
     function submitExtensionAnswer(index){
       const q = extensionQuestions[extensionState.current];
       const correct = q.options[index].correct;
+      const correctOption = q.options.find(o => o.correct);
+
+      logResponse(
+        q.question,
+        q.options[index].text,
+        correctOption ? correctOption.text : "",
+        correct
+      );
+
       stats.total += 1;
 
       if(correct){
@@ -1585,6 +1978,7 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
       }
 
       updateStats();
+      renderDetailedResults();
 
       const fb = document.getElementById("extension-feedback");
       fb.className = `feedback ${correct ? 'good' : 'bad'} show`;
@@ -1610,6 +2004,7 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
 
     function completeExtension(){
       state.extensionCompleted = true;
+      saveCurrentUserData();
       showCompletion();
     }
 
@@ -1674,9 +2069,14 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
         </div>
       `;
       updateStats();
+      renderDetailedResults();
     }
 
-    function resetApp(){
+    function resetApp(clearResponses = true){
+      if (clearResponses) {
+        responseLog = [];
+      }
+
       stats.total = 0;
       stats.correct = 0;
       stats.wrong = 0;
@@ -1711,9 +2111,12 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
       `;
       hideAllInteractive();
       updateStats();
+      saveCurrentUserData();
+      renderDetailedResults();
     }
 
     function startQuizMode(){
+      if (!requireCurrentUser()) return;
       state.activeMode = "quiz";
       hideAllInteractive();
       quizState.current = 0;
@@ -1763,6 +2166,15 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
     function submitQuizSingle(index){
       const q = quizState.questions[quizState.current];
       const correct = q.options[index].correct;
+      const correctOption = q.options.find(o => o.correct);
+
+      logResponse(
+        q.question,
+        q.options[index].text,
+        correctOption ? correctOption.text : "",
+        correct
+      );
+
       stats.total += 1;
       if (correct) {
         stats.correct += 1;
@@ -1771,6 +2183,7 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
         playWrongAnswerAudio();
       }
       updateStats();
+      renderDetailedResults();
       renderQuizFeedback(correct, q.feedback);
     }
 
@@ -1788,6 +2201,16 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
       const correct = checked.length === correctIdx.length &&
         checked.every(i => correctIdx.includes(i));
 
+      const selectedTexts = checked.map(i => q.options[i].text).join(" | ");
+      const correctTexts = q.options.filter(o => o.correct).map(o => o.text).join(" | ");
+
+      logResponse(
+        q.question,
+        selectedTexts,
+        correctTexts,
+        correct
+      );
+
       stats.total += 1;
       if (correct) {
         stats.correct += 1;
@@ -1796,6 +2219,7 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
         playWrongAnswerAudio();
       }
       updateStats();
+      renderDetailedResults();
       renderQuizFeedback(correct, q.feedback);
     }
 
@@ -1839,10 +2263,13 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
         </div>
       `;
       updateStats();
+      renderDetailedResults();
     }
 
+    preloadCurrentUser();
+    updateCurrentUserDisplay();
+    renderDetailedResults();
     updateStats();
   </script>
 </body>
 </html>
-
