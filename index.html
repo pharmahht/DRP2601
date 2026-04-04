@@ -1725,8 +1725,8 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
       }
 
       const rows = [[
-        "Group name",
         "Class",
+        "Group",
         "Submitted time",
         "Question",
         "Selected answer",
@@ -1736,8 +1736,8 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
 
       responseLog.forEach(r => {
         rows.push([
-          currentUser.groupName,
           currentUser.className,
+          currentUser.groupName,
           formatDateTime(r.timestamp),
           r.question,
           r.selectedAnswer,
@@ -1754,7 +1754,7 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${currentUser.groupName}_${currentUser.className}_results.csv`.replace(/\s+/g, "_");
+      a.download = `${currentUser.className}_${currentUser.groupName}_results.csv`.replace(/\s+/g, "_");
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -2033,6 +2033,17 @@ Because she had a history of esophagitis and sometimes felt that tablets became 
             <div>✓ Vitamin C deficiency should be considered in the differential diagnosis of gingival swelling and bleeding.</div>
             <div>✓ Classic drug groups associated with gingival overgrowth include phenytoin, cyclosporin, and calcium channel blockers.</div>
             <div>✓ Several non-bisphosphonate medications can also cause gastrointestinal mucosal injury or drug-induced esophagitis.</div>
+
+  <div style="margin-top:16px;text-align:center">
+    <button class="btn" type="button" onclick="exportCurrentUserCSV()">
+      Export Your Team Result
+    </button>
+  </div>
+
+  <!-- NEW: review instruction -->
+  <div style="margin-top:12px;text-align:center;font-weight:600;color:#5eead4">
+    Review Final Result Below ⬇️
+  </div>
           </div>
 
           <div class="takeaway" style="margin-top:14px;text-align:left">
